@@ -43,10 +43,10 @@ class AmpyFuse(Operations):
         pass
 
     def chmod(self, path, mode):
-        raise FuseOSError(201)
+        raise NotImplementedError()
 
     def chown(self, path, uid, gid):
-        raise FuseOSError(202)
+        raise NotImplementedError()
 
     def getattr(self, path, fh=None):
         pattern = r'\((?P<st_mode>\d+), ' \
@@ -68,16 +68,16 @@ class AmpyFuse(Operations):
         return re.findall(r"'\s*([^']*?)\s*'", ret)
 
     def readlink(self, path):
-        raise FuseOSError(205)
+        raise NotImplementedError()
 
     def mknod(self, path, mode, dev):
-        raise FuseOSError(206)
+        raise NotImplementedError()
 
     def rmdir(self, path):
-        raise FuseOSError(207)
+        raise NotImplementedError()
 
     def mkdir(self, path, mode):
-        raise FuseOSError(208)
+        raise NotImplementedError()
 
     def statfs(self, path):
         pattern = r'\((?P<f_bsize>\d+), ' \
@@ -95,19 +95,19 @@ class AmpyFuse(Operations):
         return {k: int(v) for k, v in stats.items()}
 
     def unlink(self, path):
-        raise FuseOSError(200)
+        raise NotImplementedError()
 
     def symlink(self, name, target):
-        raise FuseOSError(210)
+        raise NotImplementedError()
 
     def rename(self, old, new):
-        raise FuseOSError(211)
+        raise NotImplementedError()
 
     def link(self, target, name):
-        raise FuseOSError(212)
+        raise NotImplementedError()
 
     def utimens(self, path, times=None):
-        raise FuseOSError(213)
+        raise NotImplementedError()
 
     def destroy(self, path):
         self.board.exit_raw_repl()
@@ -118,28 +118,28 @@ class AmpyFuse(Operations):
     #
 
     def open(self, path, flags):
-        raise FuseOSError(errno.EPERM)
+        raise NotImplementedError()
 
     def create(self, path, mode, fi=None):
-        raise FuseOSError(errno.EPERM)
+        raise NotImplementedError()
 
     def read(self, path, length, offset, fh):
-        raise FuseOSError(errno.EPERM)
+        raise NotImplementedError()
 
     def write(self, path, buf, offset, fh):
-        raise FuseOSError(errno.EPERM)
+        raise NotImplementedError()
 
     def truncate(self, path, length, fh=None):
-        raise FuseOSError(errno.EPERM)
+        raise NotImplementedError()
 
     def flush(self, path, fh):
-        raise FuseOSError(errno.EPERM)
+        raise NotImplementedError()
 
     def release(self, path, fh):
-        raise FuseOSError(errno.EPERM)
+        raise NotImplementedError()
 
     def fsync(self, path, fdatasync, fh):
-        raise FuseOSError(errno.EPERM)
+        raise NotImplementedError()
 
 
 def main(device, mntpoint):
