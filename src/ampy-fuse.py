@@ -1,5 +1,6 @@
 import sys
 import errno
+import re
 
 from ampy.pyboard import Pyboard
 
@@ -53,7 +54,10 @@ class AmpyFuse(Operations):
         raise FuseOSError(0xF8)
 
     def statfs(self, path):
-        raise FuseOSError(0xF9)
+        pattern = r'\((?P<f_bsize>\d+), (?P<f_frsize>\d+), (?P<f_blocks>\d+), (?P<f_bfree>\d+), (?P<f_bavail>\d+), (?P<f_files>\d+), (?P<f_ffree>\d+), (?P<f_avail>\d+), (?P<f_flag>\d+), (?P<f_namemax>\d+)\)'
+        ret = self.eval("os.statvfs('{}')".format(path))
+        stats = re.match(pattern, ret).groupdict()
+        return {k: int(v) for k, v in stats.items()}
 
     def unlink(self, path):
         raise FuseOSError(0xF0)
