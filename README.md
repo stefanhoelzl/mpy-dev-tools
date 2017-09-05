@@ -1,9 +1,9 @@
-# amp-fuse
+# ampy-fuse
 FUSE filesystem for ampy
 
 # Requirements
-adafruit-ampy
-fusepy
+* adafruit-ampy
+* fusepy
 
 # Usage
 ```
