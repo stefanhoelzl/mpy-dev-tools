@@ -64,7 +64,8 @@ class AmpyFuse(Operations):
         return {k: int(v) for k, v in attrs.items()}
 
     def readdir(self, path, fh):
-        raise FuseOSError(204)
+        ret = self.eval("os.listdir('{}')".format(path))
+        return re.findall(r"'\s*([^']*?)\s*'", ret)
 
     def readlink(self, path):
         raise FuseOSError(205)
