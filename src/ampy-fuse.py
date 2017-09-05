@@ -74,10 +74,10 @@ class AmpyFuse(Operations):
         raise NotImplementedError()
 
     def rmdir(self, path):
-        raise NotImplementedError()
+        self.eval("os.rmdir('{}')".format(path))
 
     def mkdir(self, path, mode):
-        raise NotImplementedError()
+        self.eval("os.mkdir('{}')".format(path))
 
     def statfs(self, path):
         pattern = r'\((?P<f_bsize>\d+), ' \
