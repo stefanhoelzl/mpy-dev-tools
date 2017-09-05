@@ -11,6 +11,7 @@ class AmpyFuse(Operations):
         self.board = Pyboard(device)
         self.board.enter_raw_repl()
         self.exec('import os')
+        self.file_handles = {}
 
     #
     # Ampy methods
@@ -121,7 +122,13 @@ class AmpyFuse(Operations):
     #
 
     def open(self, path, flags):
-        raise NotImplementedError()
+        file_handle = 0
+        while file_handle in self.file_handles:
+            file_handle += 1
+        var = "fh_{}".format(file_handle)
+        self.create_var(var, 'open("{}")'.format(path))
+        self.file_handles[file_handle] = var
+        return file_handle
 
     def create(self, path, mode, fi=None):
         raise NotImplementedError()
