@@ -19,9 +19,9 @@ class AmpyFuse(Operations):
     def exec(self, command):
         self.board.exec(command)
 
-    def eval(self, command):
+    def eval(self, var, command):
         try:
-            ret = self.board.eval(command).decode('utf-8')
+            ret = self.board.eval('{}.{}'.format(var, command)).decode('utf-8')
         except PyboardError as e:
             pattern = re.compile(r'OSError: \[Errno (?P<error_number>\d+)\]',
                                  re.MULTILINE)
@@ -34,6 +34,9 @@ class AmpyFuse(Operations):
                 raise
         else:
             return ret
+
+    def create_var(self, var, command):
+        self.board.eval("{} = {}".format(var, command))
 
     #
     # Filesystem methods
@@ -59,12 +62,12 @@ class AmpyFuse(Operations):
                   r'(?P<st_atime>\d+), ' \
                   r'(?P<st_mtime>\d+), ' \
                   r'(?P<st_ctime>\d+)\)'
-        ret = self.eval("os.stat('{}')".format(path))
+        ret = self.eval("os", "stat('{}')".format(path))
         attrs = re.match(pattern, ret).groupdict()
         return {k: int(v) for k, v in attrs.items()}
 
     def readdir(self, path, fh):
-        ret = self.eval("os.listdir('{}')".format(path))
+        ret = self.eval("os", "listdir('{}')".format(path))
         return re.findall(r"'\s*([^']*?)\s*'", ret)
 
     def readlink(self, path):
@@ -74,10 +77,10 @@ class AmpyFuse(Operations):
         raise NotImplementedError()
 
     def rmdir(self, path):
-        self.eval("os.rmdir('{}')".format(path))
+        self.eval("os", "rmdir('{}')".format(path))
 
     def mkdir(self, path, mode):
-        self.eval("os.mkdir('{}')".format(path))
+        self.eval("os", "mkdir('{}')".format(path))
 
     def statfs(self, path):
         pattern = r'\((?P<f_bsize>\d+), ' \
@@ -90,7 +93,7 @@ class AmpyFuse(Operations):
                   r'(?P<f_avail>\d+), ' \
                   r'(?P<f_flag>\d+), ' \
                   r'(?P<f_namemax>\d+)\)'
-        ret = self.eval("os.statvfs('{}')".format(path))
+        ret = self.eval("os", "statvfs('{}')".format(path))
         stats = re.match(pattern, ret).groupdict()
         return {k: int(v) for k, v in stats.items()}
 
