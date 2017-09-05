@@ -36,7 +36,16 @@ class AmpyFuse(Operations):
         raise FuseOSError(202)
 
     def getattr(self, path, fh=None):
-        pattern = r'\((?P<st_mode>\d+), (?P<st_ino>\d+), (?P<st_dev>\d+), (?P<st_nlink>\d+), (?P<st_uid>\d+), (?P<st_gid>\d+), (?P<st_size>\d+), (?P<st_atime>\d+), (?P<st_mtime>\d+), (?P<st_ctime>\d+)\)'
+        pattern = r'\((?P<st_mode>\d+), ' \
+                  r'(?P<st_ino>\d+), ' \
+                  r'(?P<st_dev>\d+), ' \
+                  r'(?P<st_nlink>\d+), ' \
+                  r'(?P<st_uid>\d+), ' \
+                  r'(?P<st_gid>\d+), ' \
+                  r'(?P<st_size>\d+), ' \
+                  r'(?P<st_atime>\d+), ' \
+                  r'(?P<st_mtime>\d+), ' \
+                  r'(?P<st_ctime>\d+)\)'
         ret = self.eval("os.stat('{}')".format(path))
         stats = re.match(pattern, ret).groupdict()
         return {k: int(v) for k, v in stats.items()}
@@ -57,7 +66,16 @@ class AmpyFuse(Operations):
         raise FuseOSError(208)
 
     def statfs(self, path):
-        pattern = r'\((?P<f_bsize>\d+), (?P<f_frsize>\d+), (?P<f_blocks>\d+), (?P<f_bfree>\d+), (?P<f_bavail>\d+), (?P<f_files>\d+), (?P<f_ffree>\d+), (?P<f_avail>\d+), (?P<f_flag>\d+), (?P<f_namemax>\d+)\)'
+        pattern = r'\((?P<f_bsize>\d+), ' \
+                  r'(?P<f_frsize>\d+), ' \
+                  r'(?P<f_blocks>\d+), ' \
+                  r'(?P<f_bfree>\d+), ' \
+                  r'(?P<f_bavail>\d+), ' \
+                  r'(?P<f_files>\d+), ' \
+                  r'(?P<f_ffree>\d+), ' \
+                  r'(?P<f_avail>\d+), ' \
+                  r'(?P<f_flag>\d+), ' \
+                  r'(?P<f_namemax>\d+)\)'
         ret = self.eval("os.statvfs('{}')".format(path))
         stats = re.match(pattern, ret).groupdict()
         return {k: int(v) for k, v in stats.items()}
