@@ -2,7 +2,7 @@ import sys
 import errno
 import re
 
-from ampy.pyboard import Pyboard
+from ampy.pyboard import Pyboard, PyboardError
 
 from fuse import FUSE, FuseOSError, Operations
 
@@ -20,7 +20,20 @@ class AmpyFuse(Operations):
         self.board.exec(command)
 
     def eval(self, command):
-        return self.board.eval(command).decode('utf-8')
+        try:
+            ret = self.board.eval(command).decode('utf-8')
+        except PyboardError as e:
+            pattern = re.compile(r'OSError: \[Errno (?P<error_number>\d+)\]',
+                                 re.MULTILINE)
+            error_message = e.args[2].decode('utf-8')
+            match = pattern.search(error_message)
+            if match:
+                error_number = int(match.group('error_number'))
+                raise FuseOSError(error_number)
+            else:
+                raise
+        else:
+            return ret
 
     #
     # Filesystem methods
@@ -47,8 +60,8 @@ class AmpyFuse(Operations):
                   r'(?P<st_mtime>\d+), ' \
                   r'(?P<st_ctime>\d+)\)'
         ret = self.eval("os.stat('{}')".format(path))
-        stats = re.match(pattern, ret).groupdict()
-        return {k: int(v) for k, v in stats.items()}
+        attrs = re.match(pattern, ret).groupdict()
+        return {k: int(v) for k, v in attrs.items()}
 
     def readdir(self, path, fh):
         raise FuseOSError(204)
