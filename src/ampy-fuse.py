@@ -30,28 +30,28 @@ class AmpyFuse(Operations):
         pass
 
     def chmod(self, path, mode):
-        raise FuseOSError(0xF1)
+        raise FuseOSError(201)
 
     def chown(self, path, uid, gid):
-        raise FuseOSError(0xF2)
+        raise FuseOSError(202)
 
     def getattr(self, path, fh=None):
-        raise FuseOSError(0xF3)
+        raise FuseOSError(203)
 
     def readdir(self, path, fh):
-        raise FuseOSError(0xF4)
+        raise FuseOSError(204)
 
     def readlink(self, path):
-        raise FuseOSError(0xF5)
+        raise FuseOSError(205)
 
     def mknod(self, path, mode, dev):
-        raise FuseOSError(0xF6)
+        raise FuseOSError(206)
 
     def rmdir(self, path):
-        raise FuseOSError(0xF7)
+        raise FuseOSError(207)
 
     def mkdir(self, path, mode):
-        raise FuseOSError(0xF8)
+        raise FuseOSError(208)
 
     def statfs(self, path):
         pattern = r'\((?P<f_bsize>\d+), (?P<f_frsize>\d+), (?P<f_blocks>\d+), (?P<f_bfree>\d+), (?P<f_bavail>\d+), (?P<f_files>\d+), (?P<f_ffree>\d+), (?P<f_avail>\d+), (?P<f_flag>\d+), (?P<f_namemax>\d+)\)'
@@ -60,19 +60,19 @@ class AmpyFuse(Operations):
         return {k: int(v) for k, v in stats.items()}
 
     def unlink(self, path):
-        raise FuseOSError(0xF0)
+        raise FuseOSError(200)
 
     def symlink(self, name, target):
-        raise FuseOSError(0xFA)
+        raise FuseOSError(210)
 
     def rename(self, old, new):
-        raise FuseOSError(0xFB)
+        raise FuseOSError(211)
 
     def link(self, target, name):
-        raise FuseOSError(0xFC)
+        raise FuseOSError(212)
 
     def utimens(self, path, times=None):
-        raise FuseOSError(0xFD)
+        raise FuseOSError(213)
 
     def destroy(self, path):
         self.board.exit_raw_repl()
