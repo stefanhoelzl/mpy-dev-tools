@@ -1,0 +1,2 @@
+fusepy>=2.0.4
+adafruit-ampy>=1.0.1
