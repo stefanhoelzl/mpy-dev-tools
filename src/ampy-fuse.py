@@ -1,11 +1,25 @@
 import sys
 import errno
 
+from ampy.pyboard import Pyboard
+
 from fuse import FUSE, FuseOSError, Operations
 
 class AmpyFuse(Operations):
     def __init__(self, device):
-        pass
+        self.board = Pyboard(device)
+        self.board.enter_raw_repl()
+        self.exec('import os')
+
+    #
+    # Ampy methods
+    #
+
+    def exec(self, command):
+        self.board.exec(command)
+
+    def eval(self, command):
+        return self.board.eval(command).decode('utf-8')
 
     #
     # Filesystem methods
@@ -55,6 +69,10 @@ class AmpyFuse(Operations):
 
     def utimens(self, path, times=None):
         raise FuseOSError(0xFD)
+
+    def destroy(self, path):
+        self.board.exit_raw_repl()
+        self.board.close()
 
     #
     # File methods
