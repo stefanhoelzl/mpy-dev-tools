@@ -36,7 +36,10 @@ class AmpyFuse(Operations):
         raise FuseOSError(202)
 
     def getattr(self, path, fh=None):
-        raise FuseOSError(203)
+        pattern = r'\((?P<st_mode>\d+), (?P<st_ino>\d+), (?P<st_dev>\d+), (?P<st_nlink>\d+), (?P<st_uid>\d+), (?P<st_gid>\d+), (?P<st_size>\d+), (?P<st_atime>\d+), (?P<st_mtime>\d+), (?P<st_ctime>\d+)\)'
+        ret = self.eval("os.stat('{}')".format(path))
+        stats = re.match(pattern, ret).groupdict()
+        return {k: int(v) for k, v in stats.items()}
 
     def readdir(self, path, fh):
         raise FuseOSError(204)
