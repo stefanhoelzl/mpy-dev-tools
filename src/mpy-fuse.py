@@ -1,5 +1,6 @@
 import sys
 import errno
+import os
 import re
 
 from ampy.pyboard import Pyboard, PyboardError
@@ -129,12 +130,28 @@ class MpyFuse(Operations):
         while file_handle in self.file_handles:
             file_handle += 1
         var = "fh_{}".format(file_handle)
-        self.create_var(var, 'open("{}")'.format(path))
+
+        if flags & (os.O_RDONLY + os.O_APPEND):
+            mode = "a"
+        elif flags & os.O_RDONLY:
+            mode = "r"
+        elif flags & (os.O_RDWR + os.O_CREAT):
+            mode = "w+"
+        elif flags & os.O_RDWR:
+            mode = "r+"
+        elif flags & (os.O_WRONLY + os.O_TRUNC + os.O_CREAT):
+            mode = "w"
+        elif flags & os.O_APPEND:
+            mode = "a+"
+        else:
+            mode = "w+"
+
+        self.create_var(var, 'open("{}", "{}")'.format(path, mode))
         self.file_handles[file_handle] = var
         return file_handle
 
     def create(self, path, mode, fi=None):
-        raise NotImplementedError()
+        return self.open(path, os.O_RDWR + os.O_CREAT)
 
     def read(self, path, length, offset, fh):
         var = self.file_handles[fh]
