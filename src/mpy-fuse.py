@@ -11,7 +11,7 @@ class MpyFuse(Operations):
         self.board = Pyboard(device)
         self.board.enter_raw_repl()
         self.exec('import os')
-        self.file_handles = {}
+        self.file_handles = dict()
 
     #
     # Mpy methods
@@ -37,7 +37,7 @@ class MpyFuse(Operations):
             return ret
 
     def create_var(self, var, command):
-        self.board.eval("{} = {}".format(var, command))
+        self.board.exec("{} = {}".format(var, command))
 
     #
     # Filesystem methods
@@ -114,6 +114,9 @@ class MpyFuse(Operations):
         raise NotImplementedError()
 
     def destroy(self, path):
+        for fh in self.file_handles:
+            self.release(None, fh)
+
         self.board.exit_raw_repl()
         self.board.close()
 
@@ -143,10 +146,13 @@ class MpyFuse(Operations):
         raise NotImplementedError()
 
     def flush(self, path, fh):
-        raise NotImplementedError()
+        var = self.file_handles[fh]
+        self.eval(var, "flush()")
 
     def release(self, path, fh):
-        raise NotImplementedError()
+        var = self.file_handles[fh]
+        self.eval(var, "close()")
+        del self.file_handles[fh]
 
     def fsync(self, path, fdatasync, fh):
         raise NotImplementedError()
