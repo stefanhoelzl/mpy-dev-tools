@@ -115,7 +115,8 @@ class MpyFuse(Operations):
         raise NotImplementedError()
 
     def destroy(self, path):
-        for fh in self.file_handles:
+        fhs = list(self.file_handles.keys())
+        for fh in fhs:
             self.release(None, fh)
 
         self.board.exit_raw_repl()
@@ -163,7 +164,11 @@ class MpyFuse(Operations):
         raise NotImplementedError()
 
     def truncate(self, path, length, fh=None):
-        raise NotImplementedError()
+        if length is 0:
+            fh = self.open(path, os.O_RDWR)
+            self.release(path, fh)
+        else:
+            raise NotImplementedError()
 
     def flush(self, path, fh):
         var = self.file_handles[fh]
