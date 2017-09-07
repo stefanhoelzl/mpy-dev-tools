@@ -6,7 +6,7 @@ from ampy.pyboard import Pyboard, PyboardError
 
 from fuse import FUSE, FuseOSError, Operations
 
-class AmpyFuse(Operations):
+class MpyFuse(Operations):
     def __init__(self, device):
         self.board = Pyboard(device)
         self.board.enter_raw_repl()
@@ -14,7 +14,7 @@ class AmpyFuse(Operations):
         self.file_handles = {}
 
     #
-    # Ampy methods
+    # Mpy methods
     #
 
     def exec(self, command):
@@ -153,7 +153,7 @@ class AmpyFuse(Operations):
 
 
 def main(device, mntpoint):
-    FUSE(AmpyFuse(device), mntpoint, nothreads=True, foreground=True)
+    FUSE(MpyFuse(device), mntpoint, nothreads=True, foreground=True)
 
 if __name__ == '__main__':
     main(sys.argv[1], sys.argv[2])
