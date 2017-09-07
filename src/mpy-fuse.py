@@ -137,7 +137,10 @@ class MpyFuse(Operations):
         raise NotImplementedError()
 
     def read(self, path, length, offset, fh):
-        raise NotImplementedError()
+        var = self.file_handles[fh]
+        self.eval(var, "seek({}, 0)".format(offset))
+        w = self.eval(var, "read({})".format(length)).encode('ascii')
+        return w.replace(b"\r\n", b"\n")
 
     def write(self, path, buf, offset, fh):
         raise NotImplementedError()
