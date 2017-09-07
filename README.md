@@ -7,5 +7,5 @@ FUSE filesystem for micropython devices bases on ampy
 
 # Usage
 ```
-ampy-fuse <DevicePath> <MountPoint>
+mpy-fuse <DevicePath> <MountPoint>
 ```
