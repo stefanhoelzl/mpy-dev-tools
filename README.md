@@ -1,5 +1,5 @@
-# ampy-fuse
-FUSE filesystem for ampy
+# mpy-fuse
+FUSE filesystem for micropython devices bases on ampy
 
 # Requirements
 * adafruit-ampy
