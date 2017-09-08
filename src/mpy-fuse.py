@@ -188,5 +188,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("device", help="Micropython Device")
     parser.add_argument("mntpoint", help="Mounting point")
+    parser.add_argument("-d", "--daemon", action="store_true",
+                        help="Run as daemon")
     args = parser.parse_args()
-    FUSE(MpyFuse(args.device), args.mntpoint, nothreads=True, foreground=True)
+    FUSE(MpyFuse(args.device), args.mntpoint,
+         nothreads=True,
+         foreground=not args.daemon)
