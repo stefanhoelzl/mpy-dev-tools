@@ -8,4 +8,5 @@ FUSE filesystem for micropython devices bases on ampy
 # Usage
 ```
 mpy_fuse.py [-h] [-d|--daemon] device mntpoint
+mpy_sync.py [-h] src dest
 ```
