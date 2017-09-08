@@ -100,7 +100,7 @@ class MpyFuse(Operations):
         return {k: int(v) for k, v in stats.items()}
 
     def unlink(self, path):
-        raise NotImplementedError()
+        self.eval("os", "remove('{}')".format(path))
 
     def symlink(self, name, target):
         raise NotImplementedError()
