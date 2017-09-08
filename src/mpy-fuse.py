@@ -183,8 +183,10 @@ class MpyFuse(Operations):
         self.flush(path, fh)
 
 
-def main(device, mntpoint):
-    FUSE(MpyFuse(device), mntpoint, nothreads=True, foreground=True)
-
 if __name__ == '__main__':
-    main(sys.argv[1], sys.argv[2])
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("device", help="Micropython Device")
+    parser.add_argument("mntpoint", help="Mounting point")
+    args = parser.parse_args()
+    FUSE(MpyFuse(args.device), args.mntpoint, nothreads=True, foreground=True)
