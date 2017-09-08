@@ -134,7 +134,7 @@ class MpyFuse(Operations):
 
         if flags & (os.O_RDONLY + os.O_APPEND):
             mode = "a"
-        elif flags & os.O_RDONLY:
+        elif flags == os.O_RDONLY:
             mode = "r"
         elif flags & (os.O_RDWR + os.O_CREAT):
             mode = "w+"
@@ -157,18 +157,18 @@ class MpyFuse(Operations):
     def read(self, path, length, offset, fh):
         var = self.file_handles[fh]
         self.eval(var, "seek({}, 0)".format(offset))
-        w = self.eval(var, "read({})".format(length)).encode('ascii')
+        w = self.eval(var, "read({})".format(length)).encode('utf-8')
         return w.replace(b"\r\n", b"\n")
 
     def write(self, path, buf, offset, fh):
-        raise NotImplementedError()
+        var = self.file_handles[fh]
+        self.eval(var, "seek({}, 0)".format(offset))
+        cmd = 'write("""{}""")'.format(buf.decode('utf-8'))
+        l = self.eval(var, cmd)
+        return int(l)
 
     def truncate(self, path, length, fh=None):
-        if length is 0:
-            fh = self.open(path, os.O_RDWR)
-            self.release(path, fh)
-        else:
-            raise NotImplementedError()
+        pass
 
     def flush(self, path, fh):
         var = self.file_handles[fh]
@@ -180,7 +180,7 @@ class MpyFuse(Operations):
         del self.file_handles[fh]
 
     def fsync(self, path, fdatasync, fh):
-        raise NotImplementedError()
+        self.flush(path, fh)
 
 
 def main(device, mntpoint):
