@@ -48,7 +48,7 @@ class MpyFuse(Operations):
         pass
 
     def chmod(self, path, mode):
-        raise NotImplementedError()
+        pass
 
     def chown(self, path, uid, gid):
         raise NotImplementedError()
@@ -106,7 +106,7 @@ class MpyFuse(Operations):
         raise NotImplementedError()
 
     def rename(self, old, new):
-        raise NotImplementedError()
+        self.eval("os", "rename('{}', '{}')".format(old, new))
 
     def link(self, target, name):
         raise NotImplementedError()
