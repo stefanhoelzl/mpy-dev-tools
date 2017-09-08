@@ -7,5 +7,5 @@ FUSE filesystem for micropython devices bases on ampy
 
 # Usage
 ```
-mpy-fuse <DevicePath> <MountPoint>
+mpy_fuse.py [-h] [-d|--daemon] device mntpoint
 ```
