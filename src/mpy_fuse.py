@@ -182,6 +182,8 @@ class MpyFuse(Operations):
     def fsync(self, path, fdatasync, fh):
         self.flush(path, fh)
 
+def mount(device, mntpoint, daemon=True):
+    FUSE(MpyFuse(device), mntpoint, nothreads=True, foreground=not daemon)
 
 if __name__ == '__main__':
     import argparse
@@ -191,6 +193,4 @@ if __name__ == '__main__':
     parser.add_argument("-d", "--daemon", action="store_true",
                         help="Run as daemon")
     args = parser.parse_args()
-    FUSE(MpyFuse(args.device), args.mntpoint,
-         nothreads=True,
-         foreground=not args.daemon)
+    mount(args.device, args.mntpoint, args.daemon)
