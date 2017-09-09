@@ -18,6 +18,7 @@ def sync(src, dest):
             relative = f.relative_to(src)
             f_dest = dest / relative
             shutil.copy(str(f), str(f_dest))
+            yield relative
 
     last_sync.touch(exist_ok=True)
 
@@ -28,4 +29,5 @@ if __name__ == '__main__':
     parser.add_argument("src", help="Local source code directory")
     parser.add_argument("dest", help="Micropython device mountpoint")
     args = parser.parse_args()
-    sync(args.src, args.dest)
+    for p in sync(args.src, args.dest):
+        print(str(p))
