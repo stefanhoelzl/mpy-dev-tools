@@ -7,6 +7,7 @@ from ampy.pyboard import Pyboard, PyboardError
 
 from fuse import FUSE, FuseOSError, Operations
 
+
 class MpyFuse(Operations):
     def __init__(self, device):
         self.board = Pyboard(device)
@@ -181,6 +182,7 @@ class MpyFuse(Operations):
 
     def fsync(self, path, fdatasync, fh):
         self.flush(path, fh)
+
 
 def mount(device, mntpoint, daemon=True):
     FUSE(MpyFuse(device), mntpoint, nothreads=True, foreground=not daemon)
