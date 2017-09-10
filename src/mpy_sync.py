@@ -17,8 +17,12 @@ def sync(src, dest):
         if mtime > last_sync_time:
             relative = f.relative_to(src)
             f_dest = dest / relative
-            shutil.copy(str(f), str(f_dest))
-            yield relative
+
+            if f.is_dir():
+                f_dest.mkdir(parents=True, exist_ok=True)
+            else:
+                shutil.copy(str(f), str(f_dest))
+                yield relative
 
     last_sync.touch(exist_ok=True)
 
