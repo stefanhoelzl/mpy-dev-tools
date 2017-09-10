@@ -2,6 +2,18 @@ import os
 import shutil
 from pathlib import Path
 
+class SyncOperation(object):
+    def __init__(self, path):
+        self.path = path
+
+    def __repr__(self):
+        return "{}({})".format(self.__class__.__name__, self.path)
+
+class FileCreated(SyncOperation): pass
+class FileUpdated(SyncOperation): pass
+class FileDeleted(SyncOperation): pass
+class DirectoryCreated(SyncOperation): pass
+class DirectoryDeleted(SyncOperation): pass
 
 def sync(src, dest):
     last_sync = src / Path('.last_sync')
@@ -18,11 +30,12 @@ def sync(src, dest):
             relative = f.relative_to(src)
             f_dest = dest / relative
 
-            if f.is_dir():
+            if f.is_dir() and not f.exists():
                 f_dest.mkdir(parents=True, exist_ok=True)
+                yield DirectoryCreated(relative)
             else:
                 shutil.copy(str(f), str(f_dest))
-                yield relative
+                yield FileUpdated(relative)
 
     last_sync.touch(exist_ok=True)
 
