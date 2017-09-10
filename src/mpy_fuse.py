@@ -1,14 +1,13 @@
-import sys
-import errno
 import os
 import re
+from multiprocessing import Process
 
 from ampy.pyboard import Pyboard, PyboardError
 
 from fuse import FUSE, FuseOSError, Operations
 
 
-class MpyFuse(Operations):
+class MpyFuseOperations(Operations):
     def __init__(self, device):
         self.board = Pyboard(device)
         self.board.enter_raw_repl()
@@ -165,8 +164,8 @@ class MpyFuse(Operations):
         var = self.file_handles[fh]
         self.eval(var, "seek({}, 0)".format(offset))
         cmd = 'write("""{}""")'.format(buf.decode('utf-8'))
-        l = self.eval(var, cmd)
-        return int(l)
+        self.eval(var, cmd)
+        return len(buf)
 
     def truncate(self, path, length, fh=None):
         pass
@@ -184,15 +183,38 @@ class MpyFuse(Operations):
         self.flush(path, fh)
 
 
-def mount(device, mntpoint, daemon=True):
-    FUSE(MpyFuse(device), mntpoint, nothreads=True, foreground=not daemon)
+class MpyFuse(object):
+    def __init__(self, device, mntpoint):
+        self.process = None
+        self.mntpoint = mntpoint
+        self.device = device
+
+    def __repr__(self):
+        return 'MpyFuse(device="{}", mntpoint="{}", mounted={})'\
+            .format(self.device, self.mntpoint, self.process is not None)
+
+    def mount(self):
+        fuse_args = (MpyFuseOperations(self.device), self.mntpoint)
+        fuse_kwargs = {'nothreads': True, 'foreground': True}
+
+        self.process = Process(target=FUSE, args=fuse_args, kwargs=fuse_kwargs)
+        self.process.daemon = True
+        self.process.start()
+
+    def unmount(self):
+        self.process.terminate()
+        self.process = None
+
 
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("device", help="Micropython Device")
     parser.add_argument("mntpoint", help="Mounting point")
-    parser.add_argument("-d", "--daemon", action="store_true",
-                        help="Run as daemon")
     args = parser.parse_args()
-    mount(args.device, args.mntpoint, args.daemon)
+
+    fuse = MpyFuse(args.device, args.mntpoint)
+    fuse.mount()
+
+    import signal
+    signal.pause()
