@@ -22,14 +22,11 @@ def exec_file(device, script):
     pyb.close()
 
 
-def run(script, device, mntpoint=None, syncpath=None):
+def run(script, device, syncpath=None):
     if not syncpath:
         syncpath = Path(script).parent
 
-    is_temp = False
-    if not mntpoint:
-        is_temp = True
-        mntpoint = tempfile.mkdtemp()
+    mntpoint = tempfile.mkdtemp()
 
     fuse = MpyFuse(device, mntpoint)
     fuse.mount()
@@ -39,7 +36,7 @@ def run(script, device, mntpoint=None, syncpath=None):
     fuse.unmount()
     yield 'Device unmounted'
 
-    if is_temp: shutil.rmtree(mntpoint)
+    shutil.rmtree(mntpoint)
 
     yield from exec_file(device, script)
 
@@ -49,8 +46,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("script", help=".py-Script to run")
     parser.add_argument("device", help="Micropython Device")
-    parser.add_argument("-m", '--mntpoint',
-                        help="Mounting point", required=False)
     args = parser.parse_args()
 
-    for s in run(args.script, args.device, args.mntpoint): print(s)
+    for s in run(args.script, args.device): print(s)
