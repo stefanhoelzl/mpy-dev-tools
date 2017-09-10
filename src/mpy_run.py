@@ -2,7 +2,6 @@ import tempfile
 import shutil
 from pathlib import Path
 
-from ampy.files import Files
 from ampy.pyboard import Pyboard
 
 from mpy_fuse import MpyFuse
