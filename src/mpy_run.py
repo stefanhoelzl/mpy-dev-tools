@@ -1,24 +1,27 @@
 import tempfile
+import time
 import shutil
 from pathlib import Path
 
 from ampy.pyboard import Pyboard
+from ampy.files import Files
 
 from mpy_fuse import MpyFuse
 from mpy_sync import sync
 
-
 def exec_file(device, script):
     yield 'Run {}'.format(script)
     pyb = Pyboard(device)
-    pyb.enter_raw_repl()
-    with open(script, 'rb') as f:
-        for line in f.readlines():
-            ret = pyb.exec(line)
-            if len(ret) > 0:
-                yield str(ret)[2:-5]
-    pyb.exit_raw_repl()
+    l = Files(pyb).run(script)
+    # pyb.enter_raw_repl()
+    # with open(script, 'rb') as f:
+    #     for line in f.readlines():
+    #         ret = pyb.exec(line)
+    #         if len(ret) > 0:
+    #             yield str(ret)[2:-5]
+    # pyb.exit_raw_repl()
     pyb.close()
+    yield str(l)[2:-1].replace('\\r\\n', '\n')
 
 
 def run(script, device, syncpath=None):
@@ -29,10 +32,12 @@ def run(script, device, syncpath=None):
 
     fuse = MpyFuse(device, mntpoint)
     fuse.mount()
+    time.sleep(1)
     yield 'Device {} mounted at {}'.format(device, mntpoint)
     yield 'Synchronize'
     for f in sync(syncpath, mntpoint): yield f
     fuse.unmount()
+    time.sleep(1)
     yield 'Device unmounted'
 
     shutil.rmtree(mntpoint)
