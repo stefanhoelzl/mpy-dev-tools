@@ -33,7 +33,7 @@ def sync(src, dest):
             if f.is_dir() and not f.exists():
                 f_dest.mkdir(parents=True, exist_ok=True)
                 yield DirectoryCreated(relative)
-            else:
+            elif not f.is_dir():
                 shutil.copy(str(f), str(f_dest))
                 yield FileUpdated(relative)
 
