@@ -7,12 +7,12 @@ from mpy_sync import sync
 from mpy_device import MpyDevice
 
 
-def exec_file(device, script):
-    dev = MpyDevice(device)
-    dev.execfile(script)
+def exec_file(device, script, output=None):
+    with MpyDevice(device) as dev:
+        dev.execfile(script, output=output)
 
 
-def run(device, script, syncpath):
+def run(device, script, syncpath, script_output=None):
     if syncpath:
         mntpoint = tempfile.mkdtemp()
 
@@ -27,8 +27,8 @@ def run(device, script, syncpath):
         yield 'Device unmounted'
 
         shutil.rmtree(mntpoint)
-
-    exec_file(device, script)
+    yield "Run script"
+    exec_file(device, script, output=script_output)
 
 if __name__ == '__main__':
     import argparse
