@@ -94,8 +94,8 @@ class MpyDevice(object):
         self.serial.close()
 
     def __enter__(self):
-        self.enter_repl()
         self.enter_raw_repl()
+        return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
