@@ -3,7 +3,7 @@ development tools for micropython boards
 
 # Requirements
 * fusepy
-*pyserial
+* pyserial
 
 # mpy_fuse
 Mounts a device file system
