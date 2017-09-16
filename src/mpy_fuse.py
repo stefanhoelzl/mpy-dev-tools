@@ -2,14 +2,13 @@ import os
 import re
 from multiprocessing import Process
 
-from ampy.pyboard import Pyboard, PyboardError
-
 from fuse import FUSE, FuseOSError, Operations
 
+from mpy_device import MpyDevice, MpyDeviceError
 
 class MpyFuseOperations(Operations):
     def __init__(self, device):
-        self.board = Pyboard(device)
+        self.board = MpyDevice(device)
         self.board.enter_raw_repl()
         self.exec('import os')
         self.file_handles = dict()
@@ -17,18 +16,16 @@ class MpyFuseOperations(Operations):
     #
     # Mpy methods
     #
-
-    def exec(self, command):
-        self.board.exec(command)
-
-    def eval(self, var, command):
+    def exec(self, command, eval=False):
+        cmd = self.board.exec
+        if eval:
+            cmd = self.board.eval
         try:
-            ret = self.board.eval('{}.{}'.format(var, command)).decode('utf-8')
-        except PyboardError as e:
+            ret = cmd(command)
+        except MpyDeviceError as e:
             pattern = re.compile(r'OSError: \[Errno (?P<error_number>\d+)\]',
                                  re.MULTILINE)
-            error_message = e.args[2].decode('utf-8')
-            match = pattern.search(error_message)
+            match = pattern.search(e.args[0])
             if match:
                 error_number = int(match.group('error_number'))
                 raise FuseOSError(error_number)
@@ -36,9 +33,6 @@ class MpyFuseOperations(Operations):
                 raise
         else:
             return ret
-
-    def create_var(self, var, command):
-        self.board.exec("{} = {}".format(var, command))
 
     #
     # Filesystem methods
@@ -64,12 +58,12 @@ class MpyFuseOperations(Operations):
                   r'(?P<st_atime>\d+), ' \
                   r'(?P<st_mtime>\d+), ' \
                   r'(?P<st_ctime>\d+)\)'
-        ret = self.eval("os", "stat('{}')".format(path))
+        ret = self.exec("os.stat('{}')".format(path), eval=True)
         attrs = re.match(pattern, ret).groupdict()
         return {k: int(v) for k, v in attrs.items()}
 
     def readdir(self, path, fh):
-        ret = self.eval("os", "listdir('{}')".format(path))
+        ret = self.exec("os.listdir('{}')".format(path), eval=True)
         return re.findall(r"'\s*([^']*?)\s*'", ret)
 
     def readlink(self, path):
@@ -79,10 +73,10 @@ class MpyFuseOperations(Operations):
         raise NotImplementedError()
 
     def rmdir(self, path):
-        self.eval("os", "rmdir('{}')".format(path))
+        self.exec("os.rmdir('{}')".format(path))
 
     def mkdir(self, path, mode):
-        self.eval("os", "mkdir('{}')".format(path))
+        self.exec("os.mkdir('{}')".format(path))
 
     def statfs(self, path):
         pattern = r'\((?P<f_bsize>\d+), ' \
@@ -95,18 +89,18 @@ class MpyFuseOperations(Operations):
                   r'(?P<f_avail>\d+), ' \
                   r'(?P<f_flag>\d+), ' \
                   r'(?P<f_namemax>\d+)\)'
-        ret = self.eval("os", "statvfs('{}')".format(path))
+        ret = self.exec("os.statvfs('{}')".format(path), eval=True)
         stats = re.match(pattern, ret).groupdict()
         return {k: int(v) for k, v in stats.items()}
 
     def unlink(self, path):
-        self.eval("os", "remove('{}')".format(path))
+        self.exec("os.remove('{}')".format(path))
 
     def symlink(self, name, target):
         raise NotImplementedError()
 
     def rename(self, old, new):
-        self.eval("os", "rename('{}', '{}')".format(old, new))
+        self.exec("os.rename('{}', '{}')".format(old, new))
 
     def link(self, target, name):
         raise NotImplementedError()
@@ -119,7 +113,6 @@ class MpyFuseOperations(Operations):
         for fh in fhs:
             self.release(None, fh)
 
-        self.board.exit_raw_repl()
         self.board.close()
 
     #
@@ -147,7 +140,7 @@ class MpyFuseOperations(Operations):
         else:
             mode = "w+"
 
-        self.create_var(var, 'open("{}", "{}")'.format(path, mode))
+        self.exec('{} = open("{}", "{}")'.format(var, path, mode))
         self.file_handles[file_handle] = var
         return file_handle
 
@@ -156,15 +149,14 @@ class MpyFuseOperations(Operations):
 
     def read(self, path, length, offset, fh):
         var = self.file_handles[fh]
-        self.eval(var, "seek({}, 0)".format(offset))
-        w = self.eval(var, "read({})".format(length)).encode('utf-8')
+        self.exec("{}.seek({}, 0)".format(var, offset))
+        w = self.exec("{}.read({})".format(var, length), eval=True).encode('utf-8')
         return w.replace(b"\r\n", b"\n")
 
     def write(self, path, buf, offset, fh):
         var = self.file_handles[fh]
-        self.eval(var, "seek({}, 0)".format(offset))
-        cmd = 'write("""{}""")'.format(buf.decode('utf-8'))
-        self.eval(var, cmd)
+        self.exec("{}.seek({}, 0)".format(var, offset))
+        self.exec('{}.write("""{}""")'.format(var, buf.decode('utf-8')))
         return len(buf)
 
     def truncate(self, path, length, fh=None):
@@ -172,11 +164,11 @@ class MpyFuseOperations(Operations):
 
     def flush(self, path, fh):
         var = self.file_handles[fh]
-        self.eval(var, "flush()")
+        self.exec("{}.flush()".format(var))
 
     def release(self, path, fh):
         var = self.file_handles[fh]
-        self.eval(var, "close()")
+        self.exec("{}.close()".format(var))
         del self.file_handles[fh]
 
     def fsync(self, path, fdatasync, fh):
