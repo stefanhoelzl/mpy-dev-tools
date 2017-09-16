@@ -12,7 +12,7 @@ def exec_file(device, script):
     dev.execfile(script)
 
 
-def run(device, script, syncpath=None):
+def run(device, script, syncpath):
     if syncpath:
         mntpoint = tempfile.mkdtemp()
 
@@ -36,7 +36,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("device", help="Micropython Device")
     parser.add_argument("script", help=".py-Script to run")
+    parser.add_argument("-s", "--sync_path", help="Synchronization path")
     args = parser.parse_args()
 
-    for s in run(args.device, args.script):
+    for s in run(args.device, args.script, args.sync_path):
         print(s)
