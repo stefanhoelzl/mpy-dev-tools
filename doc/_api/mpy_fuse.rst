@@ -1,5 +1,5 @@
-mpy\_fuse module
-================
+mpy\_fuse
+=========
 
 .. automodule:: mpy_fuse
     :members:

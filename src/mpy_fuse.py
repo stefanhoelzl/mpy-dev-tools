@@ -1,3 +1,6 @@
+"""
+Module to mount a micropython device as fuse-filesystem.
+"""
 import os
 import re
 from multiprocessing import Process
@@ -177,6 +180,23 @@ class MpyFuseOperations(Operations):
 
 
 class MpyFuse(object):
+    """
+    micropython fuse-filesystem
+
+    Class to mount and unmount a micropython device filesystem.
+.. code-block:: python
+
+        fuse = MpyFuse('/dev/tty.SLAB_USBtoUART', 'mpy_fs')
+        fuse.mount()
+        shutil.copy('main.py', 'mpy_fs/')
+        fuse.unmount()
+
+.. code-block:: python
+
+        with MpyFuse('/dev/tty.SLAB_USBtoUART', 'mpy_fs'):
+            shutil.copy('main.py', 'mpy_fs/')
+
+    """
     def __init__(self, device, mntpoint):
         self.process = None
         self.mntpoint = mntpoint
@@ -185,6 +205,12 @@ class MpyFuse(object):
     def __repr__(self):
         return 'MpyFuse(device="{}", mntpoint="{}", mounted={})'\
             .format(self.device, self.mntpoint, self.process is not None)
+
+    def __enter__(self):
+        self.mount()
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.unmount()
 
     def mount(self):
         fuse_args = (MpyFuseOperations(self.device), self.mntpoint)
