@@ -58,11 +58,12 @@ def sync(src, dest, cleanup=True):
     last_sync.touch(exist_ok=True)
 
 
+import argparse
+parser = argparse.ArgumentParser(description="Synchronizes a local folder "
+                                             "with the device file system")
+parser.add_argument("src", help="Local source code directory")
+parser.add_argument("dest", help="Micropython device mountpoint")
 if __name__ == '__main__':
-    import argparse
-    parser = argparse.ArgumentParser()
-    parser.add_argument("src", help="Local source code directory")
-    parser.add_argument("dest", help="Micropython device mountpoint")
     args = parser.parse_args()
     for p in sync(args.src, args.dest):
         print(str(p))

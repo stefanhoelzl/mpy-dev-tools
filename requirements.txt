@@ -1,2 +1,4 @@
 fusepy>=2.0.4
 pyserial>=3.4
+sphinx
+sphinx-argparse
