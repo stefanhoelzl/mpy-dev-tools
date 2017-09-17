@@ -1,6 +1,7 @@
 import tempfile
 import time
 import shutil
+import sys
 
 from mpy_fuse import MpyFuse
 from mpy_sync import sync
@@ -39,5 +40,6 @@ if __name__ == '__main__':
     parser.add_argument("-s", "--sync_path", help="Synchronization path")
     args = parser.parse_args()
 
-    for s in run(args.device, args.script, args.sync_path):
+    for s in run(args.device, args.script, args.sync_path,
+                 script_output=sys.stdout):
         print(s)
