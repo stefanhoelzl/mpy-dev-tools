@@ -9,6 +9,19 @@ class MpyDeviceError(Exception):
 
 
 class MpyDevice(object):
+    """
+    micropython board interface
+
+    This module provides a MpyDevice class to communicate with a micropython
+    device. It allows to execute python code remote on the device.
+.. code-block:: python
+
+        with MpyDevice('dev/tty.SLAB_USBtoUART') as dev:
+            dev.exec('import machine')
+            freq = dev.eval('machine.freq()')
+            dev.execfile('main.py')
+
+    """
     CTRL_A = b'\x01'
     CTRL_B = b'\x02'
     CTRL_C = b'\x03'
@@ -102,6 +115,14 @@ class MpyDevice(object):
         self.close()
 
     def exec(self, command, output=None):
+        """
+        Executes a python expression or statement on the device
+
+        :param command: Python command (expression or statement) to execute
+        :param output: File-object to redirect the output of stdout
+        :raises: MpyDeviceError: if the command raises an Exception on the board
+        :return: output on stdout as string
+        """
         self.serial.write(command.encode() + MpyDevice.COMMAND_TERMINATION)
         self.read_until('OK', output=None)
         ret = self.read_until('\x04', output=output)
@@ -111,10 +132,26 @@ class MpyDevice(object):
         return ret
 
     def eval(self, expression, output=None):
+        """
+        Evaluates an python expression on the device and returns the
+        return-value as string.
+
+        :param expression: Python expression to evaluate
+        :param output: File-object to redirect the output of stdout
+        :return: Return value of the expression as string
+        """
         ret = self.exec('print({})'.format(expression), output=output)
         ret = ret.strip()
         return ret
 
     def execfile(self, filename, output=sys.stdout):
+        """
+        Executes a script on the device.
+        The Script must be located on the device.
+
+        :param filename: Filename of the script to run on the device.
+        :param output: File-object to redirect the output of stdout
+        :return: output on stdout as string
+        """
         return self.exec('exec(open("{}").read())\x04'.format(filename),
                          output=output)

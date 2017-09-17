@@ -1,7 +1,5 @@
-mpy\_device module
-==================
+mpy\_device
+===========
 
 .. automodule:: mpy_device
     :members:
-    :undoc-members:
-    :show-inheritance:

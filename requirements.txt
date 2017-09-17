@@ -1,5 +1,5 @@
 fusepy>=2.0.4
 pyserial>=3.4
-Sphinx
-sphinx-argparse
-sphinx_rtd_theme
+Sphinx>=1.6.3
+sphinx-argparse>=0.2.1
+sphinx_rtd_theme>=0.2.4
