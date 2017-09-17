@@ -1,5 +1,5 @@
-mpy\_run module
-===============
+mpy\_run
+========
 
 .. automodule:: mpy_run
     :members:

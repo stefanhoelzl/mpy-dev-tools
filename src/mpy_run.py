@@ -14,6 +14,22 @@ def exec_file(device, script, output=None):
 
 
 def run(device, script, syncpath, script_output=None):
+    """
+    Generator which
+    * mounts a micropython device as fuse-filesystem
+    * synchronizes a folder with the micropython file-system
+    * executes a Python-script located a the device
+
+    :param device: device name
+    :param script: script location on the device
+    :param syncpath: source-folder to synchronize with the device
+    :param script_output: File-object to redirect the script output
+    :return: yields the performed actions
+
+.. code-block:: python
+
+        run('/dev/tty.SLAB_USBtoUART', 'app.py', 'src/', script_output=sys.stdout)
+    """
     if syncpath:
         mntpoint = tempfile.mkdtemp()
 
