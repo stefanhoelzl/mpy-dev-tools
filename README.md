@@ -10,6 +10,6 @@ http://mpy-dev-tools.readthedocs.io/en/master/
 
 ## PyCharm integration
  * Create new Run configurations
-  * Script: mpy_run.py
-  * Parameter: /dev/tty.SLAB_USBtoUART app.py -s src
+   * Script: mpy_run.py
+   * Parameter: /dev/tty.SLAB_USBtoUART app.py -s src
  * Start the run configuration to sync your src-folder with the device an execute your app remotly
