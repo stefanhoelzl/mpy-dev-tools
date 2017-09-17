@@ -52,7 +52,7 @@ def sync(src, dest, cleanup=True):
             f_dest.unlink()
             yield FileDeleted(relative)
         elif f_dest.is_dir() and not f_src.exists():
-            shutil.rmtree(f_dest)
+            shutil.rmtree(str(f_dest))
             yield DirectoryDeleted(relative)
 
     last_sync.touch(exist_ok=True)
