@@ -10,6 +10,7 @@ Welcome to mpy-dev-tools's documentation!
     :maxdepth: 2
 
     cli
+    _api/modules
 
 Indices and tables
 ==================

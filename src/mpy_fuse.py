@@ -199,6 +199,7 @@ class MpyFuse(object):
         self.process = None
 
 if __name__ == '__main__':
+    from cli import mpy_fuse_parser
     args = mpy_fuse_parser.parse_args()
 
     fuse = MpyFuse(args.device, args.mntpoint)
