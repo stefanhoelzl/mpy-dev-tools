@@ -36,6 +36,7 @@ class MpyDevice(object):
         self.serial = serial.Serial(self.dev,
                                     baudrate=MpyDevice.DEFAULT_BAUDRATE,
                                     timeout=0)
+        self.serial.write(MpyDevice.CTRL_C+MpyDevice.CTRL_C)
         self.flush()
 
     def flush(self):
