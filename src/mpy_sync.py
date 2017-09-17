@@ -18,6 +18,24 @@ class DirectoryDeleted(SyncOperation): pass
 
 
 def sync(src, dest, cleanup=True):
+    """
+    Generator which syncs a source-folder to a destination folder.
+    Copies files where the modification date is newer then the last sync date.
+    Last sync date is saved in .last_sync-file stored in the source-folder.
+    Optional deletes files from destination folder if not existend in source folder.
+
+    :param src: source-folder
+    :param dest: destination-folder
+    :param cleanup: If true, files not existing in the source folder gets
+     deleted form the destination folder (optional)
+    :return: yields sync operations e.g. FileCreated, FileDeleted, FileUpdated,
+     DirectoryCreated, DirectoryDeleted
+
+.. code-block:: python
+
+        for f in sync('myporject/src', '/mnt/mpy_fs', cleanup=True):
+            print(f)
+    """
     last_sync = src / Path('.last_sync')
     if last_sync.is_file():
         last_sync_time = os.stat(str(last_sync)).st_mtime
