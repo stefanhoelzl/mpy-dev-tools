@@ -32,14 +32,9 @@ def run(device, script, syncpath, script_output=None):
     exec_file(device, script, output=script_output)
 
 
-import argparse
-parser = argparse.ArgumentParser(description="Runs a script on the device")
-parser.add_argument("device", help="Micropython Device")
-parser.add_argument("script", help=".py-Script to run")
-parser.add_argument("-s", "--sync_path", help="Synchronization path")
 if __name__ == '__main__':
-
-    args = parser.parse_args()
+    from cli import mpy_run_parser
+    args = mpy_run_parser.parse_args()
 
     for s in run(args.device, args.script, args.sync_path,
                  script_output=sys.stdout):

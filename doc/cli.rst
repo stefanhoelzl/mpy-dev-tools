@@ -6,7 +6,7 @@ mpy-fuse
 
 .. argparse::
     :filename: ../src/mpy_fuse.py
-    :func: parser
+    :func: mpy_fuse_parser
     :prog: mpy_fuse.py
 
 mpy-sync
@@ -14,7 +14,7 @@ mpy-sync
 
 .. argparse::
     :filename: ../src/mpy_sync.py
-    :func: parser
+    :func: mpy_sync_parser
     :prog: mpy_sync.py
 
 mpy-run
@@ -22,5 +22,5 @@ mpy-run
 
 .. argparse::
     :filename: ../src/mpy_run.py
-    :func: parser
+    :func: mpy_run_parser
     :prog: mpy_run.py

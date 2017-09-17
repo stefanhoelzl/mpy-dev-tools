@@ -198,12 +198,8 @@ class MpyFuse(object):
         self.process.terminate()
         self.process = None
 
-import argparse
-parser = argparse.ArgumentParser(description="Mounts a device file system")
-parser.add_argument("device", help="Micropython Device")
-parser.add_argument("mntpoint", help="Mounting point")
 if __name__ == '__main__':
-    args = parser.parse_args()
+    args = mpy_fuse_parser.parse_args()
 
     fuse = MpyFuse(args.device, args.mntpoint)
     fuse.mount()
