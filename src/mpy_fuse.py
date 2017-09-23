@@ -213,6 +213,9 @@ class MpyFuse(object):
         self.unmount()
 
     def mount(self):
+        """
+        Mounts the MpyFuse-Filesystem by starting a background process.
+        """
         fuse_args = (MpyFuseOperations(self.device), self.mntpoint)
         fuse_kwargs = {'nothreads': True, 'foreground': True}
 
@@ -221,6 +224,9 @@ class MpyFuse(object):
         self.process.start()
 
     def unmount(self):
+        """
+        Unmounts the MpyFuse-Filesystem by terminating the fuse-process
+        """
         self.process.terminate()
         self.process = None
 
