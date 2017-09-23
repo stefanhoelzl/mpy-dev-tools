@@ -36,7 +36,7 @@ def sync(src, dest, cleanup=True):
         for f in sync('myporject/src', '/mnt/mpy_fs', cleanup=True):
             print(f)
     """
-    last_sync = src / Path('.last_sync')
+    last_sync = src / Path('.mpy_sync')
     if last_sync.is_file():
         last_sync_time = os.stat(str(last_sync)).st_mtime
     else:
