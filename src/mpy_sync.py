@@ -43,6 +43,8 @@ def sync(src, dest, cleanup=True):
     Last sync date is saved in .last_sync-file stored in the source-folder.
     Optional deletes files from destination folder if not existend in source folder.
 
+    Can be configured with a ini-like .mpy_sync file in the source directory.
+
     :param src: source-folder
     :param dest: destination-folder
     :param cleanup: If true, files not existing in the source folder gets
@@ -54,6 +56,22 @@ def sync(src, dest, cleanup=True):
 
         for f in sync('myporject/src', '/mnt/mpy_fs', cleanup=True):
             print(f)
+
+.. code-block:: ini
+
+        [last_sync] # internals - do not modify this section
+        123456.99
+
+        [ignore] # File/Directory pattern to ignore over whole synchronisation process
+        .gitignore
+        # regular expression pattern accepted
+
+        [ignore.sync] # File/Directory pattern ignored at copiing files to the board
+        test
+
+        [ignore.delete] # File/Directoy pattern ignored at deleting from the board
+        boot.py
+        main.py
     """
     sync_config_path = src / Path('.mpy_sync')
     config = configparser.ConfigParser(allow_no_value=True)
@@ -93,19 +111,21 @@ def sync(src, dest, cleanup=True):
                 else:
                     yield FileUpdated(relative)
 
-    for f_dest in dest.glob('**/*'):
-        relative = f_dest.relative_to(dest)
-        if any(re.match(pattern, str(relative)) for pattern in ignore_delete):
-            yield Ignored(relative)
-            continue
+    if cleanup:
+        for f_dest in dest.glob('**/*'):
+            relative = f_dest.relative_to(dest)
+            if any(re.match(pattern, str(relative))
+                   for pattern in ignore_delete):
+                yield Ignored(relative)
+                continue
 
-        f_src = src / relative
-        if f_dest.is_file() and not f_src.exists():
-            f_dest.unlink()
-            yield FileDeleted(relative)
-        elif f_dest.is_dir() and not f_src.exists():
-            shutil.rmtree(str(f_dest))
-            yield DirectoryDeleted(relative)
+            f_src = src / relative
+            if f_dest.is_file() and not f_src.exists():
+                f_dest.unlink()
+                yield FileDeleted(relative)
+            elif f_dest.is_dir() and not f_src.exists():
+                shutil.rmtree(str(f_dest))
+                yield DirectoryDeleted(relative)
 
     config['last_sync'][str(time.time())] = None
     config.write(sync_config_path.open(mode='w'))
