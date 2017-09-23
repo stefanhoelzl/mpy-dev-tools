@@ -1,6 +1,9 @@
 import os
 import shutil
+import re
+import time
 from pathlib import Path
+import configparser
 
 
 class SyncOperation(object):
@@ -15,6 +18,22 @@ class FileUpdated(SyncOperation): pass
 class FileDeleted(SyncOperation): pass
 class DirectoryCreated(SyncOperation): pass
 class DirectoryDeleted(SyncOperation): pass
+class Ignored(SyncOperation): pass
+
+
+def read_ignore_patterns(config):
+    ignored = []
+    ignored_sync = []
+    ignored_del = []
+    if config.has_section('ignore'):
+        ignored = list(config['ignore'])
+
+    if config.has_section('ignore.sync'):
+        ignored_sync = list(config['ignore.sync'])
+
+    if config.has_section('ignore.delete'):
+        ignored_del = list(config['ignore.delete'])
+    return ignored+ignored_sync, ignored+ignored_del
 
 
 def sync(src, dest, cleanup=True):
@@ -36,11 +55,17 @@ def sync(src, dest, cleanup=True):
         for f in sync('myporject/src', '/mnt/mpy_fs', cleanup=True):
             print(f)
     """
-    last_sync = src / Path('.mpy_sync')
-    if last_sync.is_file():
-        last_sync_time = os.stat(str(last_sync)).st_mtime
+    sync_config_path = src / Path('.mpy_sync')
+    config = configparser.ConfigParser(allow_no_value=True)
+    config.read(str(sync_config_path))
+
+    if config.has_section('last_sync'):
+        last_sync_time = float(list(config['last_sync'])[0])
     else:
+        config.add_section('last_sync')
         last_sync_time = 0
+
+    ignore_sync, ignore_delete = read_ignore_patterns(config)
 
     src = Path(src)
     dest = Path(dest)
@@ -49,6 +74,11 @@ def sync(src, dest, cleanup=True):
         if mtime > last_sync_time:
             relative = f_src.relative_to(src)
             f_dest = dest / relative
+
+            if any(re.match(pattern, str(relative))
+                   for pattern in ignore_sync):
+                yield Ignored(relative)
+                continue
 
             if f_src.is_dir() and not f_dest.exists():
                 f_dest.mkdir(parents=True, exist_ok=True)
@@ -65,6 +95,10 @@ def sync(src, dest, cleanup=True):
 
     for f_dest in dest.glob('**/*'):
         relative = f_dest.relative_to(dest)
+        if any(re.match(pattern, str(relative)) for pattern in ignore_delete):
+            yield Ignored(relative)
+            continue
+
         f_src = src / relative
         if f_dest.is_file() and not f_src.exists():
             f_dest.unlink()
@@ -73,7 +107,8 @@ def sync(src, dest, cleanup=True):
             shutil.rmtree(str(f_dest))
             yield DirectoryDeleted(relative)
 
-    last_sync.touch(exist_ok=True)
+    config['last_sync'][str(time.time())] = None
+    config.write(sync_config_path.open(mode='w'))
 
 
 if __name__ == '__main__':
