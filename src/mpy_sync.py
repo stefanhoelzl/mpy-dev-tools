@@ -63,8 +63,7 @@ def sync(src, dest, cleanup=True):
         123456.99
 
         [ignore] # File/Directory pattern to ignore over whole synchronisation process
-        .gitignore
-        # regular expression pattern accepted
+        .git*
 
         [ignore.sync] # File/Directory pattern ignored at copiing files to the board
         test
@@ -93,7 +92,7 @@ def sync(src, dest, cleanup=True):
             relative = f_src.relative_to(src)
             f_dest = dest / relative
 
-            if any(re.match(pattern, str(relative))
+            if any(Path(f_src) in src.glob(pattern)
                    for pattern in ignore_sync):
                 yield Ignored(relative)
                 continue
@@ -114,8 +113,8 @@ def sync(src, dest, cleanup=True):
     if cleanup:
         for f_dest in dest.glob('**/*'):
             relative = f_dest.relative_to(dest)
-            if any(re.match(pattern, str(relative))
-                   for pattern in ignore_delete):
+            if any(Path(f_dest) in dest.glob(pattern)
+                   for pattern in ignore_sync):
                 yield Ignored(relative)
                 continue
 
@@ -127,6 +126,7 @@ def sync(src, dest, cleanup=True):
                 shutil.rmtree(str(f_dest))
                 yield DirectoryDeleted(relative)
 
+    config['last_sync'].clear()
     config['last_sync'][str(time.time())] = None
     config.write(sync_config_path.open(mode='w'))
 
