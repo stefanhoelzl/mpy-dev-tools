@@ -38,7 +38,8 @@ def run(device, script, syncpath, script_output=None):
         time.sleep(1)
         yield 'Device {} mounted at {}'.format(device, mntpoint)
         yield 'Synchronize'
-        for f in sync(syncpath, mntpoint): yield f
+        for f in sync(syncpath, mntpoint):
+            yield f
         fuse.unmount()
         time.sleep(1)
         yield 'Device unmounted'

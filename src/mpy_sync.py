@@ -1,6 +1,5 @@
 import os
 import shutil
-import re
 import time
 from pathlib import Path
 import configparser
@@ -114,7 +113,7 @@ def sync(src, dest, cleanup=True):
         for f_dest in dest.glob('**/*'):
             relative = f_dest.relative_to(dest)
             if any(Path(f_dest) in dest.glob(pattern)
-                   for pattern in ignore_sync):
+                   for pattern in ignore_delete):
                 yield Ignored(relative)
                 continue
 
