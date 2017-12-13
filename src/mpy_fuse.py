@@ -12,7 +12,7 @@ from mpy_device import MpyDevice, MpyDeviceError
 
 class MpyFuseOperations(Operations):
     def __init__(self, device):
-        self.board = MpyDevice(device)
+        self.board = device
         self.board.enter_raw_repl()
         self.exec('import os')
         self.file_handles = dict()
@@ -201,6 +201,7 @@ class MpyFuse(object):
         self.process = None
         self.mntpoint = mntpoint
         self.device = device
+        self.dev = None
 
     def __repr__(self):
         return 'MpyFuse(device="{}", mntpoint="{}", mounted={})'\
@@ -216,7 +217,8 @@ class MpyFuse(object):
         """
         Mounts the MpyFuse-Filesystem by starting a background process.
         """
-        fuse_args = (MpyFuseOperations(self.device), self.mntpoint)
+        self.dev = MpyDevice(self.device)
+        fuse_args = (MpyFuseOperations(self.dev), self.mntpoint)
         fuse_kwargs = {'nothreads': True, 'foreground': True}
 
         self.process = Process(target=FUSE, args=fuse_args, kwargs=fuse_kwargs)
@@ -229,6 +231,7 @@ class MpyFuse(object):
         """
         self.process.terminate()
         self.process = None
+        self.dev.close()
 
 if __name__ == '__main__':
     from cli import mpy_fuse_parser
