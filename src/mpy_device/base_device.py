@@ -1,14 +1,11 @@
-import re
 import sys
-
-import serial
 
 
 class MpyDeviceError(Exception):
     pass
 
 
-class Device(object):
+class BaseDevice(object):
     """
     micropython board interface
 
@@ -22,30 +19,12 @@ class Device(object):
             dev.execfile('main.py')
 
     """
-    def connect(self):
-        raise NotImplementedError()
-
-    def flush(self):
-        raise NotImplementedError()
-
-    def enter_raw_repl(self):
-        raise NotImplementedError()
-
-    def close(self):
-        raise NotImplementedError()
-
     def __enter__(self):
         self.enter_raw_repl()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
-
-    def exec(self, command, output=None):
-        raise NotImplementedError()
-
-    def eval(self, expression, output=None):
-        raise NotImplementedError()
 
     def execfile(self, filename, output=sys.stdout):
         """
@@ -58,3 +37,21 @@ class Device(object):
         """
         return self.exec('exec(open("{}").read())\x04'.format(filename),
                          output=output)
+
+    def connect(self):
+        raise NotImplementedError()
+
+    def flush(self):
+        raise NotImplementedError()
+
+    def enter_raw_repl(self):
+        raise NotImplementedError()
+
+    def close(self):
+        raise NotImplementedError()
+
+    def exec(self, command, output=None):
+        raise NotImplementedError()
+
+    def eval(self, expression, output=None):
+        raise NotImplementedError()

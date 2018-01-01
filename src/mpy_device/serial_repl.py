@@ -1,13 +1,12 @@
 import re
-import sys
 
 import serial
 
 
-from .device import Device
+from .base_device import BaseDevice, MpyDeviceError
 
 
-class SerialRepl(Device):
+class SerialRepl(BaseDevice):
     """
     micropython board interface
 
@@ -103,14 +102,35 @@ class SerialRepl(Device):
         self.serial.write(SerialRepl.ENTER_RAW_REPL)
         self.read_until('raw REPL; CTRL-B to exit\r\n>')
 
-    def execfile(self, filename, output=sys.stdout):
-        """
-        Executes a script on the device.
-        The Script must be located on the device.
+    def close(self):
+        self.serial.close()
 
-        :param filename: Filename of the script to run on the device.
+    def exec(self, command, output=None):
+        """
+        Executes a python expression or statement on the device
+
+        :param command: Python command (expression or statement) to execute
         :param output: File-object to redirect the output of stdout
+        :raises: MpyDeviceError: if the command raises an Exception on the board
         :return: output on stdout as string
         """
-        return self.exec('exec(open("{}").read())\x04'.format(filename),
-                         output=output)
+        self.serial.write(command.encode() + SerialRepl.COMMAND_TERMINATION)
+        self.read_until('OK', output=None)
+        ret = self.read_until('\x04', output=output)
+        err = self.read_until('\x04', output=None)
+        if err:
+            raise MpyDeviceError(err)
+        return ret
+
+    def eval(self, expression, output=None):
+        """
+        Evaluates an python expression on the device and returns the
+        return-value as string.
+
+        :param expression: Python expression to evaluate
+        :param output: File-object to redirect the output of stdout
+        :return: Return value of the expression as string
+        """
+        ret = self.exec('print({})'.format(expression), output=output)
+        ret = ret.strip()
+        return ret
