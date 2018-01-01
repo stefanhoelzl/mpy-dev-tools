@@ -4,11 +4,10 @@ import sys
 import serial
 
 
-class MpyDeviceError(Exception):
-    pass
+from .device import Device
 
 
-class MpyDevice(object):
+class SerialRepl(Device):
     """
     micropython board interface
 
@@ -47,13 +46,13 @@ class MpyDevice(object):
 
     def connect(self):
         self.serial = serial.Serial(self.dev,
-                                    baudrate=MpyDevice.DEFAULT_BAUDRATE,
+                                    baudrate=SerialRepl.DEFAULT_BAUDRATE,
                                     timeout=0)
-        self.serial.write(MpyDevice.CTRL_C+MpyDevice.CTRL_C)
+        self.serial.write(SerialRepl.CTRL_C+SerialRepl.CTRL_C)
         self.flush()
 
     def flush(self):
-        while self.serial.read(MpyDevice.FLUSH_SIZE) != b'':
+        while self.serial.read(SerialRepl.FLUSH_SIZE) != b'':
             pass
 
     def read_until(self, until, output=None):
@@ -88,61 +87,21 @@ class MpyDevice(object):
         return False
 
     def enter_repl(self):
-        self.serial.write(MpyDevice.ENTER_REPL)
+        self.serial.write(SerialRepl.ENTER_REPL)
         lines = self.readlines(4)
 
         while not self.set_info_from_string(next(lines)):
             pass
 
         if next(lines) != 'Type "help()" for more information.':
-            raise MpyDeviceError('Enter REPL response mismatch')
+            raise SerialRepl('Enter REPL response mismatch')
 
         if next(lines) != '>>> ':
-            raise MpyDeviceError('Error starting REPL')
+            raise SerialRepl('Error starting REPL')
 
     def enter_raw_repl(self):
-        self.serial.write(MpyDevice.ENTER_RAW_REPL)
+        self.serial.write(SerialRepl.ENTER_RAW_REPL)
         self.read_until('raw REPL; CTRL-B to exit\r\n>')
-
-    def close(self):
-        self.serial.close()
-
-    def __enter__(self):
-        self.enter_raw_repl()
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.close()
-
-    def exec(self, command, output=None):
-        """
-        Executes a python expression or statement on the device
-
-        :param command: Python command (expression or statement) to execute
-        :param output: File-object to redirect the output of stdout
-        :raises: MpyDeviceError: if the command raises an Exception on the board
-        :return: output on stdout as string
-        """
-        self.serial.write(command.encode() + MpyDevice.COMMAND_TERMINATION)
-        self.read_until('OK', output=None)
-        ret = self.read_until('\x04', output=output)
-        err = self.read_until('\x04', output=None)
-        if err:
-            raise MpyDeviceError(err)
-        return ret
-
-    def eval(self, expression, output=None):
-        """
-        Evaluates an python expression on the device and returns the
-        return-value as string.
-
-        :param expression: Python expression to evaluate
-        :param output: File-object to redirect the output of stdout
-        :return: Return value of the expression as string
-        """
-        ret = self.exec('print({})'.format(expression), output=output)
-        ret = ret.strip()
-        return ret
 
     def execfile(self, filename, output=sys.stdout):
         """
